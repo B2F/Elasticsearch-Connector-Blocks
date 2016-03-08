@@ -35,15 +35,16 @@ use Drupal\elasticsearch_connector_blocks\ElasticsearchFacetBlockConfigInterface
  *     "uuid" = "uuid"
  *   },
  *   links = {
- *     "canonical" = "/admin/structure/elasticsearch_facet_block_config/{elasticsearch_facet_block_config}",
- *     "add-form" = "/admin/structure/elasticsearch_facet_block_config/add",
- *     "edit-form" = "/admin/structure/elasticsearch_facet_block_config/{elasticsearch_facet_block_config}/edit",
- *     "delete-form" = "/admin/structure/elasticsearch_facet_block_config/{elasticsearch_facet_block_config}/delete",
- *     "collection" = "/admin/structure/elasticsearch_facet_block_config"
+ *     "canonical" = "/admin/config/search/elasticsearch-connector/elasticsearch_facet_block_config/{elasticsearch_facet_block_config}",
+ *     "add-form" = "/admin/config/search/elasticsearch-connector/elasticsearch_facet_block_config/add",
+ *     "edit-form" = "/admin/config/search/elasticsearch-connector/elasticsearch_facet_block_config/{elasticsearch_facet_block_config}/edit",
+ *     "delete-form" = "/admin/config/search/elasticsearch-connector/elasticsearch_facet_block_config/{elasticsearch_facet_block_config}/delete",
+ *     "collection" = "/admin/config/search/elasticsearch-connector/elasticsearch_facet_block_config"
  *   }
  * )
  */
 class ElasticsearchFacetBlockConfig extends ConfigEntityBase implements ElasticsearchFacetBlockConfigInterface {
+
   /**
    * The Elasticsearch facet block config ID.
    *
@@ -57,5 +58,12 @@ class ElasticsearchFacetBlockConfig extends ConfigEntityBase implements Elastics
    * @var string
    */
   protected $label;
+
+  /**
+   * The Elasticsearch facet block config corresponding facet name.
+   *
+   * @var string
+   */
+  protected $facetKey;
 
 }

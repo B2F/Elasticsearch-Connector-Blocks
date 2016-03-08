@@ -10,6 +10,7 @@ namespace Drupal\elasticsearch_connector_blocks\Form;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityForm;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\search_api\Entity;
 
 /**
  * Class ElasticsearchFacetBlockConfigForm.
@@ -17,10 +18,32 @@ use Drupal\Core\Form\FormStateInterface;
  * @package Drupal\elasticsearch_connector_blocks\Form
  */
 class ElasticsearchFacetBlockConfigForm extends EntityForm {
+
+  private function getAllAvailableFacets() {
+
+    $facetIds = array();
+    $indexes = $this->entityTypeManager->getStorage('search_api_index')->loadMultiple();
+
+    foreach ($indexes as $index) {
+      foreach ($index->getDatasources() as $datasource_id => $datasource) {
+        $fields = $index->getFieldsByDatasource($datasource_id);
+        foreach ($fields as $field) {
+          $fieldName = $field->getFieldIdentifier();
+          $index = $field->getIndex()->id();
+          $facetId = $index . ':' . $fieldName;
+          $facetIds[$facetId] = $facetId;
+        }
+      }
+    }
+
+    return $facetIds;
+  }
+
   /**
    * {@inheritdoc}
    */
   public function form(array $form, FormStateInterface $form_state) {
+
     $form = parent::form($form, $form_state);
 
     $elasticsearch_facet_block_config = $this->entity;
@@ -42,7 +65,14 @@ class ElasticsearchFacetBlockConfigForm extends EntityForm {
       '#disabled' => !$elasticsearch_facet_block_config->isNew(),
     );
 
-    /* You will need additional form elements for your custom properties. */
+    $facetIds = $this->getAllAvailableFacets();
+
+    $form['facetKey'] = array(
+      '#title' => 'Facet key',
+      '#type' => 'select',
+      '#options' => $facetIds,
+      '#default_value' => $elasticsearch_facet_block_config->get('facetKey'),
+    );
 
     return $form;
   }

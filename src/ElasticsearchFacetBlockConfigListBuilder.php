@@ -20,6 +20,7 @@ class ElasticsearchFacetBlockConfigListBuilder extends ConfigEntityListBuilder {
   public function buildHeader() {
     $header['label'] = $this->t('Elasticsearch facet block config');
     $header['id'] = $this->t('Machine name');
+    $header['facet_key'] = $this->t('Facet Key');
     return $header + parent::buildHeader();
   }
 
@@ -29,8 +30,8 @@ class ElasticsearchFacetBlockConfigListBuilder extends ConfigEntityListBuilder {
   public function buildRow(EntityInterface $entity) {
     $row['label'] = $entity->label();
     $row['id'] = $entity->id();
+    $row['facet_key'] = $entity->get('facetKey');
     // You probably want a few more properties here...
     return $row + parent::buildRow($entity);
   }
-
 }

@@ -8,5 +8,8 @@ elasticsearch_connector_blocks.elasticsearch_facet_block_config.*:
     label:
       type: label
       label: 'Label'
+    facetKey:
+      type: string
+      label: 'Facet name'
     uuid:
       type: string
