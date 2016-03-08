@@ -1,0 +1,8 @@
+# Elasticsearch facet block config menu items definition
+entity.elasticsearch_facet_block_config.collection:
+  title: 'Elasticsearch facet block config'
+  route_name: entity.elasticsearch_facet_block_config.collection
+  description: 'List Elasticsearch facet block config (bundles)'
+  parent: system.admin_structure
+  weight: 99
+

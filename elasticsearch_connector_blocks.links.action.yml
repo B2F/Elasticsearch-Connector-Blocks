@@ -1,0 +1,6 @@
+entity.elasticsearch_facet_block_config.add_form:
+  route_name: 'entity.elasticsearch_facet_block_config.add_form'
+  title: 'Add Elasticsearch facet block config'
+  appears_on:
+    - entity.elasticsearch_facet_block_config.collection
+

@@ -1,0 +1,12 @@
+elasticsearch_connector_blocks.elasticsearch_facet_block_config.*:
+  type: config_entity
+  label: 'Elasticsearch facet block config config'
+  mapping:
+    id:
+      type: string
+      label: 'ID'
+    label:
+      type: label
+      label: 'Label'
+    uuid:
+      type: string
