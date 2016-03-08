@@ -1,0 +1,7 @@
+name: Elasticsearch Connector Blocks
+type: module
+description: Provides facets blocks for Elasticsearch Connector through a custom API.
+core: 8.x
+package: Elasticsearch
+dependencies:
+  - elasticsearch_connector

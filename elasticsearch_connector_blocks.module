@@ -1,0 +1,25 @@
+<?php
+
+function elasticsearch_connector_blocks_requirements($phase) {
+
+  $elasticsearchBlocksEventSubscriber = \Drupal::getContainer()->get('elasticsearch_connector_blocks.event_subscriber');
+
+  if ($elasticsearchBlocksEventSubscriber->isAlive()) {
+    $cluster_node_availability = REQUIREMENT_OK;
+    $description = t('The "' . $elasticsearchBlocksEventSubscriber->clusterId . '" cluster nodes are available.');
+    $value = t('OK');
+  }
+  else {
+    $cluster_node_availability = REQUIREMENT_ERROR;
+    $description = t('The "' . $elasticsearchBlocksEventSubscriber->clusterId . '" cluster has no available nodes.');
+    $value = t('NOK');
+  }
+  $requirements['elasticsearch_connector_blocks'] = array(
+    'title' => 'Elasticsearch cluster nodes status',
+    'description' => $description,
+    'severity' => $cluster_node_availability,
+    'value' => $value
+  );
+
+  return $requirements;
+}

@@ -1,0 +1,6 @@
+services:
+  elasticsearch_connector_blocks.event_subscriber:
+    class: Drupal\elasticsearch_connector_blocks\EventSubscriber\ElasticsearchBlocksEventSubscriber
+    arguments: ['@elasticsearch_connector.client_manager', '@block.repository']
+    tags:
+      - { name: event_subscriber }
