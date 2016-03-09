@@ -27,8 +27,13 @@ abstract class ElasticFacetViewBase extends PluginBase implements ElasticFacetVi
     if ($facets) {
       foreach ($facets as $facet) {
         $label = $facet['title'] . ' (' . $facet['count'] . ')';
-        $link = Link::fromTextAndUrl($label, Url::fromUri($facet['link']));
-        $links['#items'][] = $link->toRenderable();
+        if ($facet['count'] > 0) {
+          $link = Link::fromTextAndUrl($label, $facet['link']);
+        }
+        else {
+          $link = $label;
+        }
+        $links['#items'][] = $link;
       }
     }
     return $links;

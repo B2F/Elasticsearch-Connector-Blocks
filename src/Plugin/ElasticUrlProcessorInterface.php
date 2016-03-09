@@ -14,5 +14,9 @@ use Drupal\Component\Plugin\PluginInspectionInterface;
  */
 interface ElasticUrlProcessorInterface extends PluginInspectionInterface {
 
-  public function getLink($filters, $facet);
+  public function filtersToUrl($facet, $field);
+
+  public function urlToFilters($fields);
+
 }
+

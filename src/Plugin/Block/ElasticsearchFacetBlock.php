@@ -90,15 +90,14 @@ class ElasticsearchFacetBlock extends BlockBase implements ContainerFactoryPlugi
 
       // @TODO an admin tab to choose the UrlProcessor plugin globally.
       $urlProcessor = $this->urlProcessorManager->createInstance('defaultProcessor');
-      $filters = $this->eventSubscriber->getResponseFilters();
 
-      foreach ($buckets as $bucket) {
+      foreach ($buckets as $facet) {
         // A facet item has status (active or not), count, link and title attributes.
         $facets[] = array(
           'active' => TRUE,
-          'title' => $bucket['key'],
-          'count' => $bucket['doc_count'],
-          'link' => $urlProcessor->getLink($filters, $bucket),
+          'title' => $facet['key'],
+          'count' => $facet['doc_count'],
+          'link' => $urlProcessor->filtersToUrl($facet, $this->definition['facet_name']),
         );
       }
 

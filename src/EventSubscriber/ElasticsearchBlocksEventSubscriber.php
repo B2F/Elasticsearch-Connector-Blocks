@@ -18,27 +18,35 @@ use Symfony\Component\HttpKernel\Event\GetResponseEvent;
 use Drupal\elasticsearch_connector\ElasticSearch\ClientManager;
 use Drupal\elasticsearch_connector\Entity\Cluster;
 use Drupal\Core\Database\Database;
+use Drupal\elasticsearch_connector_blocks\Plugin\ElasticUrlProcessorManager;
+
 
 class ElasticsearchBlocksEventSubscriber implements EventSubscriberInterface {
 
+  // @TODO replace the clusterId with a backoffice or dynamic setting or detection.
   public $clusterId = 'elastic';
+
   protected $client;
   protected $blockRepository;
   protected $entityManager;
   protected $queryFactory;
+  protected $elasticUrlProcessorManager;
   protected $results;
   protected $alive;
   protected $connection;
   protected $response;
-  protected $mappings = FALSE;
 
-  public function __construct(ClientManager $ClientManager, BlockRepository $blockRepository, EntityTypeManager $entityTypeManager, QueryFactory $queryFactory) {
+  private $mappings = FALSE;
+  private $aggsParams = FALSE;
+
+  public function __construct(ClientManager $ClientManager, BlockRepository $blockRepository, EntityTypeManager $entityTypeManager, QueryFactory $queryFactory, ElasticUrlProcessorManager $elasticUrlProcessorManager) {
     $cluster = Cluster::load($this->clusterId);
     $this->client = $ClientManager->getClientForCluster($cluster);
     $this->connection = $this->client->transport->getConnection();
     $this->blockRepository = $blockRepository;
     $this->entityManager = $entityTypeManager;
     $this->queryFactory = $queryFactory;
+    $this->elasticUrlProcessorManager = $elasticUrlProcessorManager;
   }
 
   public function isAlive() {
@@ -54,10 +62,6 @@ class ElasticsearchBlocksEventSubscriber implements EventSubscriberInterface {
 
   public function getResponseHits() {
     return $this->response['hits'];
-  }
-
-  public function getResponseFilters() {
-    return $this->response['aggregations'];
   }
 
   public function getResponseAggs() {
@@ -95,58 +99,73 @@ class ElasticsearchBlocksEventSubscriber implements EventSubscriberInterface {
         $params = $this->getIndexMapping('elastic_idnex');
       }
 
+      // @TODO an admin tab to choose the UrlProcessor plugin globally.
+      $urlProcessor = $this->elasticUrlProcessorManager->createInstance('defaultProcessor');
+      $filters = $urlProcessor->urlToFilters($aggsParams['facet_fields']);
+
       if ($params) {
 
-        $aggs = array();
+        // @TODO provide a hook for altering the search query. Decide what to do when no search query in Url.
+        $params['body'] = array();
+//          'query' => array(
+//            'match_all' => array(),
+//          ),
+//        );
+
         foreach ($aggsParams['facet_fields'] as $facet_field) {
-          $aggs[$facet_field] = array(
+          $params['body']['aggs'][$facet_field] = array(
             'terms' => array(
               'field' => $facet_field,
               'size' => 0,
+              'min_doc_count' => 0
             )
           );
         }
 
-        $params['body'] = array(
-          'query' => array(
-            'match_all' => array(),
-          ),
-          'aggs' => $aggs
-        );
+        if ($filters) {
+          $params['body']['query']['filtered']['filter']['terms'] = $filters;
+        }
 
         $this->response = $this->client->search($params);
+        dpm($this->response);
       }
     }
   }
 
   private function getAggsParams() {
 
-    $aggsParams = array(
-      'search_api_indexes' => array(),
-      'facet_fields' => array()
-    );
-    $availableBlocks = $this->blockRepository->getVisibleBlocksPerRegion();
-    $facetBlockConfigStorage = $this->entityManager->getStorage('elasticsearch_facet_block_config');
+    if (!$this->aggsParams) {
 
-    foreach ($availableBlocks as $key => $region) {
-      foreach ($region as $blockId => $blockObj) {
-        if (strpos($blockId, 'elasticsearchfacetblock') === 0) {
-          $facetBlockConfigName = str_replace('elasticsearchfacetblock', '', $blockId);
-          $query = $this->queryFactory->get('elasticsearch_facet_block_config');
-          $query->condition('id', $facetBlockConfigName);
-          $results = $query->execute();
-          $config = $facetBlockConfigStorage->load('title');
-          if (!in_array($aggsParams['search_api_indexes'], $config->getIndex())) {
-            $aggsParams['search_api_indexes'][] = $config->getIndex();
-          }
-          if (!in_array($aggsParams['search_api_indexes'], $config->getFacetField())) {
-            $aggsParams['facet_fields'][] = $config->getFacetField();
+      $aggsParams = array(
+        'search_api_indexes' => array(),
+        'facet_fields' => array()
+      );
+
+      $availableBlocks = $this->blockRepository->getVisibleBlocksPerRegion();
+      $facetBlockConfigStorage = $this->entityManager->getStorage('elasticsearch_facet_block_config');
+
+      foreach ($availableBlocks as $key => $region) {
+        foreach ($region as $blockId => $blockObj) {
+
+          if (strpos($blockId, 'elasticsearchfacetblock') === 0) {
+            $facetBlockConfigName = str_replace('elasticsearchfacetblock', '', $blockId);
+            $query = $this->queryFactory->get('elasticsearch_facet_block_config');
+            $query->condition('id', $facetBlockConfigName);
+            $results = $query->execute();
+            $config = $facetBlockConfigStorage->load($facetBlockConfigName);
+            if (!in_array($aggsParams['search_api_indexes'], $config->getIndex())) {
+              $aggsParams['search_api_indexes'][] = $config->getIndex();
+            }
+            if (!in_array($aggsParams['search_api_indexes'], $config->getFacetField())) {
+              $aggsParams['facet_fields'][] = $config->getFacetField();
+            }
           }
         }
       }
+      $this->aggsParams = $aggsParams;
     }
 
-    return $aggsParams;
+    return $this->aggsParams;
   }
 
   /**
