@@ -2,7 +2,7 @@
 
 function elasticsearch_connector_blocks_requirements($phase) {
 
-  $elasticsearchBlocksEventSubscriber = \Drupal::getContainer()->get('elasticsearch_connector_blocks.event_subscriber');
+  $elasticsearchBlocksEventSubscriber = \Drupal::service('elasticsearch_connector_blocks.event_subscriber');
 
   if ($elasticsearchBlocksEventSubscriber->isAlive()) {
     $cluster_node_availability = REQUIREMENT_OK;
