@@ -1,7 +1,7 @@
 services:
   elasticsearch_connector_blocks.event_subscriber:
     class: Drupal\elasticsearch_connector_blocks\EventSubscriber\ElasticsearchBlocksEventSubscriber
-    arguments: ['@elasticsearch_connector.client_manager', '@block.repository']
+    arguments: ['@elasticsearch_connector.client_manager', '@block.repository', '@entity_type.manager', '@entity.query']
     tags:
       - { name: event_subscriber }
   plugin.manager.elastic_facet_view.processor:
