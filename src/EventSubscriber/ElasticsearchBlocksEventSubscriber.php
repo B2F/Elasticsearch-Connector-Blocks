@@ -123,7 +123,7 @@ class ElasticsearchBlocksEventSubscriber implements EventSubscriberInterface {
         }
 
         if ($filters) {
-          $params['body']['query']['filtered']['filter']['terms'] = $filters;
+          $params['body']['query']['filtered']['filter']['bool'] = $filters;
         }
 
         $this->response = $this->client->search($params);

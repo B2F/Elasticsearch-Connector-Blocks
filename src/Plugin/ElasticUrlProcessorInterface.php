@@ -19,4 +19,3 @@ interface ElasticUrlProcessorInterface extends PluginInspectionInterface {
   public function urlToFilters($fields);
 
 }
-

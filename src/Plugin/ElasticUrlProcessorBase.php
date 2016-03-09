@@ -40,7 +40,7 @@ abstract class ElasticUrlProcessorBase extends PluginBase implements ElasticUrlP
     $array_key = array_search($facet['key'], $options['query'][$field]);
 
     if ($array_key !== FALSE) {
-      unset($options['query'][$field][$array_key]);
+      array_splice($options['query'][$field], $array_key, 1);
     }
     else {
       $options['query'][$field][] = $facet['key'];
@@ -53,10 +53,9 @@ abstract class ElasticUrlProcessorBase extends PluginBase implements ElasticUrlP
     $filters = array();
     foreach ($fields as $field) {
       if (isset($_GET[$field])) {
-        $filters[$field] = $_GET[$field];
+        $filters['must'][]['terms'][$field] = $_GET[$field];
       }
     }
-    var_dump($filters);
     return $filters;
   }
 }
