@@ -4,3 +4,6 @@ services:
     arguments: ['@elasticsearch_connector.client_manager', '@block.repository']
     tags:
       - { name: event_subscriber }
+  plugin.manager.elastic_facet_view.processor:
+    class: Drupal\elasticsearch_connector_blocks\Plugin\ElasticFacetViewManager
+    parent: default_plugin_manager

@@ -8,6 +8,7 @@
 namespace Drupal\elasticsearch_connector_blocks\Plugin\Derivative;
 
 use Drupal\Component\Plugin\Derivative\DeriverBase;
+use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Plugin\Discovery\ContainerDeriverInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -26,7 +27,7 @@ class ElasticsearchFacetBlock extends DeriverBase implements ContainerDeriverInt
    * @param mixed $plugin_definition
    * @param EntityManagerInterface $entity_manager
    */
-  public function __construct(EntityManagerInterface $entity_manager) {
+  public function __construct(EntityTypeManager $entity_manager) {
     $this->configStorage = $entity_manager->getStorage('elasticsearch_facet_block_config');
   }
 
@@ -35,7 +36,7 @@ class ElasticsearchFacetBlock extends DeriverBase implements ContainerDeriverInt
    */
   public static function create(ContainerInterface $container, $base_plugin_id) {
     return new static(
-      $container->get('entity.manager')
+      $container->get('entity_type.manager')
     );
   }
 
@@ -47,10 +48,9 @@ class ElasticsearchFacetBlock extends DeriverBase implements ContainerDeriverInt
     $facetBlockConfig = $this->configStorage->loadMultiple();
 
     foreach ($facetBlockConfig as $block_definition) {
-      $key_tokens = explode(':', $block_definition->get('facetKey'));
       $this->derivatives[$block_definition->id()] = $base_plugin_definition;
-      $this->derivatives[$block_definition->id()]['facet_index'] = $key_tokens[0];
-      $this->derivatives[$block_definition->id()]['facet_name'] = $key_tokens[1];
+      $this->derivatives[$block_definition->id()]['facet_index'] = $block_definition->getIndex();
+      $this->derivatives[$block_definition->id()]['facet_name'] = $block_definition->getFacetField();
       $this->derivatives[$block_definition->id()]['admin_label'] = t('Elasticsearch facet block: ') . $block_definition->id();
     }
     return $this->derivatives;

@@ -3,6 +3,7 @@
 namespace Drupal\elasticsearch_connector_blocks\Plugin\Block;
 
 use Drupal\Core\Block\BlockBase;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityViewBuilderInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
@@ -10,8 +11,10 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\node\NodeInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+use Drupal\elasticsearch_connector_blocks\Plugin\ElasticFacetViewManager;
+
 /**
- * Provides a 'NodeBlock' block plugin.
+ * Provides a 'ElasticsearchFacetBlock' block plugin.
  *
  * @Block(
  *   id = "elasticsearch_facet_block",
@@ -22,14 +25,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class ElasticsearchFacetBlock extends BlockBase implements ContainerFactoryPluginInterface {
 
   /**
-   * @var EntityViewBuilderInterface.
+   * @var ElasticFacetViewManager.
    */
-  private $viewBuilder;
-
-  /**
-   * @var NodeInterface.
-   */
-  private $node;
+  private $facetViewkManager;
 
   /**
    * Creates a NodeBlock instance.
@@ -39,8 +37,12 @@ class ElasticsearchFacetBlock extends BlockBase implements ContainerFactoryPlugi
    * @param mixed $plugin_definition
    * @param EntityManagerInterface $entity_manager
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityManagerInterface $entity_manager) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, ElasticFacetViewManager $facetViewManager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
+    $this->facetViewkManager = $facetViewManager;
+    $definition = $this->getPluginDefinition();
+    $this->index = $definition['facet_index'];
+    $this->facetId = $definition['facet_name'];
   }
 
   /**
@@ -51,22 +53,34 @@ class ElasticsearchFacetBlock extends BlockBase implements ContainerFactoryPlugi
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('entity.manager')
+      $container->get('plugin.manager.elastic_facet_view.processor')
     );
+  }
+
+  public function getIndex() {
+    return $this->index;
+  }
+
+  public function getFacetId() {
+    return $this->facetId;
   }
 
   /**
    * {@inheritdoc}
    */
   public function build() {
-    $build = array();
+    $build = array(
+      '#cache' => array(
+        'max-age' => 0,
+      )
+    );
+    $facetViewPlugin = $this->facetViewkManager->createInstance('basicLinks');
+    $build[] = $facetViewPlugin->setFacets(array('one', 'two', 'three', 'four', 'five'));
     return $build;
   }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function blockAccess(AccountInterface $account, $return_as_object = FALSE) {
-    return TRUE;
+  public function blockForm($form, FormStateInterface $form_state) {
+    $form = parent::blockForm($form, $form_state);
+    return array();
   }
 }
