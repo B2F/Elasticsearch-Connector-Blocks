@@ -12,6 +12,7 @@ use Drupal\node\NodeInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 use Drupal\elasticsearch_connector_blocks\Plugin\ElasticFacetViewManager;
+use Drupal\elasticsearch_connector_blocks\EventSubscriber\ElasticsearchBlocksEventSubscriber;
 
 /**
  * Provides a 'ElasticsearchFacetBlock' block plugin.
@@ -23,6 +24,13 @@ use Drupal\elasticsearch_connector_blocks\Plugin\ElasticFacetViewManager;
  * )
  */
 class ElasticsearchFacetBlock extends BlockBase implements ContainerFactoryPluginInterface {
+
+  private $definition;
+
+  /**
+   * @var ElasticsearchBlocksEventSubscriber
+   */
+  private $eventSubscriber;
 
   /**
    * @var ElasticFacetViewManager.
@@ -37,12 +45,11 @@ class ElasticsearchFacetBlock extends BlockBase implements ContainerFactoryPlugi
    * @param mixed $plugin_definition
    * @param EntityManagerInterface $entity_manager
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, ElasticFacetViewManager $facetViewManager) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, ElasticFacetViewManager $facetViewManager, ElasticsearchBlocksEventSubscriber $eventSubscriber) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
+    $this->eventSubscriber = $eventSubscriber;
     $this->facetViewkManager = $facetViewManager;
-    $definition = $this->getPluginDefinition();
-    $this->index = $definition['facet_index'];
-    $this->facetId = $definition['facet_name'];
+    $this->definition = $this->getPluginDefinition();
   }
 
   /**
@@ -53,30 +60,54 @@ class ElasticsearchFacetBlock extends BlockBase implements ContainerFactoryPlugi
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('plugin.manager.elastic_facet_view.processor')
+      $container->get('plugin.manager.elastic_facet_view.processor'),
+      $container->get('elasticsearch_connector_blocks.event_subscriber')
     );
-  }
-
-  public function getIndex() {
-    return $this->index;
-  }
-
-  public function getFacetId() {
-    return $this->facetId;
   }
 
   /**
    * {@inheritdoc}
    */
   public function build() {
+
     $build = array(
       '#cache' => array(
         'max-age' => 0,
       )
     );
-    $facetViewPlugin = $this->facetViewkManager->createInstance('basicLinks');
-    $build[] = $facetViewPlugin->setFacets(array('one', 'two', 'three', 'four', 'five'));
+
+    if ($buckets = $this->getBuckets()) {
+
+      global $base_url;
+      $facets = array();
+
+      foreach ($buckets as $bucket) {
+        // A facet item has status (active or not), count, link and title attributes.
+        $facets[] = array(
+          'active' => TRUE,
+          'title' => $bucket['key'],
+          'count' => $bucket['doc_count'],
+          'link' => $base_url,
+        );
+      }
+
+      // @TODO a buildForm to choose the facetView plugin and what to show when no results.
+      $facetViewPlugin = $this->facetViewkManager->createInstance('basicLinks');
+      $build[] = $facetViewPlugin->setLinks($facets);
+    }
     return $build;
+  }
+
+  public function getBuckets() {
+    $buckets = array();
+    $aggregations = $this->eventSubscriber->getAggResponse();
+    if (isset($aggregations[$this->definition['facet_name']])) {
+      $agg = $aggregations[$this->definition['facet_name']];
+      if (count($agg['buckets'])) {
+        $buckets = $agg['buckets'];
+      }
+    }
+    return $buckets;
   }
 
   public function blockForm($form, FormStateInterface $form_state) {

@@ -29,7 +29,7 @@ class ElasticsearchBlocksEventSubscriber implements EventSubscriberInterface {
   protected $results;
   protected $alive;
   protected $connection;
-  protected $buckets;
+  protected $response;
   protected $mappings = FALSE;
 
   public function __construct(ClientManager $ClientManager, BlockRepository $blockRepository, EntityTypeManager $entityTypeManager, QueryFactory $queryFactory) {
@@ -50,6 +50,10 @@ class ElasticsearchBlocksEventSubscriber implements EventSubscriberInterface {
       $this->mappings = $this->client->indices()->getMapping();
     }
     return $this->mappings;
+  }
+
+  public function getAggResponse() {
+    return $this->response['aggregations'];
   }
 
   /**
@@ -87,7 +91,7 @@ class ElasticsearchBlocksEventSubscriber implements EventSubscriberInterface {
 
         $aggs = array();
         foreach ($aggsParams['facet_fields'] as $facet_field) {
-          $aggs['f_' . $facet_field] = array(
+          $aggs[$facet_field] = array(
             'terms' => array(
               'field' => $facet_field,
               'size' => 0,
@@ -102,8 +106,7 @@ class ElasticsearchBlocksEventSubscriber implements EventSubscriberInterface {
           'aggs' => $aggs
         );
 
-        $resp = $this->client->search($params);
-        dpm($resp);
+        $this->response = $this->client->search($params);
       }
     }
   }

@@ -14,5 +14,5 @@ use Drupal\Component\Plugin\PluginInspectionInterface;
  */
 interface ElasticFacetViewInterface extends PluginInspectionInterface {
 
-  public function setFacets($buckets);
+  public function setLinks($facets);
 }
