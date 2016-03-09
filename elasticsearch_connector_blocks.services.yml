@@ -7,3 +7,6 @@ services:
   plugin.manager.elastic_facet_view.processor:
     class: Drupal\elasticsearch_connector_blocks\Plugin\ElasticFacetViewManager
     parent: default_plugin_manager
+  plugin.manager.elastic_url_processor.processor:
+    class: Drupal\elasticsearch_connector_blocks\Plugin\ElasticUrlProcessorManager
+    parent: default_plugin_manager

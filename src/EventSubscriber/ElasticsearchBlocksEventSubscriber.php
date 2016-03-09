@@ -52,7 +52,15 @@ class ElasticsearchBlocksEventSubscriber implements EventSubscriberInterface {
     return $this->mappings;
   }
 
-  public function getAggResponse() {
+  public function getResponseHits() {
+    return $this->response['hits'];
+  }
+
+  public function getResponseFilters() {
+    return $this->response['aggregations'];
+  }
+
+  public function getResponseAggs() {
     return $this->response['aggregations'];
   }
 
