@@ -4,3 +4,9 @@ entity.elasticsearch_facet_block_config.add_form:
   appears_on:
     - entity.elasticsearch_facet_block_config.collection
 
+entity.elasticsearch_search_block_conf.add_form:
+  route_name: 'entity.elasticsearch_search_block_conf.add_form'
+  title: 'Add Elasticsearch search block'
+  appears_on:
+    - entity.elasticsearch_search_block_conf.collection
+    - elasticsearch_connector.clusters

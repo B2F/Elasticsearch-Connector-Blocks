@@ -1,0 +1,12 @@
+elasticsearch_connector_blocks.elasticsearch_search_block_conf.*:
+  type: config_entity
+  label: 'Elasticsearch search block config config'
+  mapping:
+    id:
+      type: string
+      label: 'ID'
+    label:
+      type: label
+      label: 'Label'
+    uuid:
+      type: string
