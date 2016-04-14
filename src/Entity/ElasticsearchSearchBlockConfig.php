@@ -39,7 +39,7 @@ use Drupal\elasticsearch_connector_blocks\ElasticsearchSearchBlockConfigInterfac
  *     "add-form" = "/admin/config/search/elasticsearch-connector/elasticsearch_search_block_conf/add",
  *     "edit-form" = "/admin/config/search/elasticsearch-connector/elasticsearch_search_block_conf/{elasticsearch_search_block_conf}/edit",
  *     "delete-form" = "/admin/config/search/elasticsearch-connector/elasticsearch_search_block_conf/{elasticsearch_search_block_conf}/delete",
- *     "collection" = "/admin/config/search/elasticsearch_search_block_conf"
+ *     "collection" = "/admin/config/search/elasticsearch-connector/elasticsearch_search_block_conf"
  *   }
  * )
  */
@@ -58,4 +58,18 @@ class ElasticsearchSearchBlockConfig extends ConfigEntityBase implements Elastic
    */
   protected $label;
 
+  /**
+   * The Elasticsearch search block corresponding server index.
+   *
+   * @var string
+   */
+  protected $serverIndex;
+
+  public function getServer() {
+    return preg_replace('/^(.*):.*$/', '$1', $this->serverIndex);
+  }
+
+  public function getIndex() {
+    return preg_replace('/^.*\:(.*)$/', '$1', $this->serverIndex);
+  }
 }

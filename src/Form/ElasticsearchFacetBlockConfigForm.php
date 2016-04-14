@@ -19,9 +19,18 @@ use Drupal\search_api\Entity;
  */
 class ElasticsearchFacetBlockConfigForm extends EntityForm {
 
-  private function getAllAvailableFacets() {
+  private function getAvailableSearchBlock() {
+    $searchBlocks = array();
+    $searchBlocksEntities = $this->entityTypeManager->getStorage('elasticsearch_search_block_conf')->loadMultiple();
+    foreach ($searchBlocksEntities as $searchBlock) {
+      $searchBlocks[$searchBlock->getIndex()][$searchBlock->id()] = $searchBlock->label();
+    }
+    return $searchBlocks;
+  }
 
-    $facetIds = array();
+  private function getAllAvailableFacets($serverIndex) {
+
+    $indexFields = array();
     $indexes = $this->entityTypeManager->getStorage('search_api_index')->loadMultiple();
 
     foreach ($indexes as $index) {
@@ -31,12 +40,12 @@ class ElasticsearchFacetBlockConfigForm extends EntityForm {
           $fieldName = $field->getFieldIdentifier();
           $index = $field->getIndex()->id();
           $facetId = $index . ':' . $fieldName;
-          $facetIds[$facetId] = $facetId;
+          $indexFields[$index][$facetId] = $fieldName;
         }
       }
     }
 
-    return $facetIds;
+    return $indexFields;
   }
 
   /**
@@ -65,14 +74,30 @@ class ElasticsearchFacetBlockConfigForm extends EntityForm {
       '#disabled' => !$elasticsearch_facet_block_config->isNew(),
     );
 
-    $facetIds = $this->getAllAvailableFacets();
-
-    $form['facetKey'] = array(
-      '#title' => 'Facet key',
+    // @todo: adds a warning message on top of the page when no search blocks found.
+    $form['searchBlock'] = array(
+      '#title' => 'Search block',
+      '#required' => TRUE,
+      '#description' => 'Elasticsearch Connector search block executing the search request and display results. Search blocks above are grouped by server index.',
       '#type' => 'select',
-      '#options' => $facetIds,
-      '#default_value' => $elasticsearch_facet_block_config->get('facetKey'),
+      '#options' => array(),
+      '#default_value' => $elasticsearch_facet_block_config->get('searchBlock'),
     );
+    $form['searchBlock']['#options'] = $this->getAvailableSearchBlock();
+
+    $serverIndex = NULL;
+    $indexFields = $this->getAllAvailableFacets($serverIndex);
+
+    // @todo: only display optgroups indexes matching the selected search block.
+    $form['indexField'] = array(
+      '#title' => 'Index field',
+      '#required' => TRUE,
+      '#type' => 'select',
+      '#options' => $indexFields,
+      '#default_value' => $elasticsearch_facet_block_config->get('indexField'),
+    );
+
+    // @todo: adds the facetView display plugin select options.
 
     return $form;
   }

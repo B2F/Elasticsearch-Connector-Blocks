@@ -8,5 +8,8 @@ elasticsearch_connector_blocks.elasticsearch_search_block_conf.*:
     label:
       type: label
       label: 'Label'
+    serverIndex:
+      type: string
+      label: 'Server Index'
     uuid:
       type: string

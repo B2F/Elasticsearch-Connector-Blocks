@@ -8,8 +8,11 @@ elasticsearch_connector_blocks.elasticsearch_facet_block_config.*:
     label:
       type: label
       label: 'Label'
-    facetKey:
+    indexField:
       type: string
-      label: 'Facet name'
+      label: 'Index field'
+    searchBlock:
+      type: string
+      label: 'Search block'
     uuid:
       type: string

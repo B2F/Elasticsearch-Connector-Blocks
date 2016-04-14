@@ -17,6 +17,22 @@ use Drupal\Core\Form\FormStateInterface;
  * @package Drupal\elasticsearch_connector_blocks\Form
  */
 class ElasticsearchSearchBlockConfigForm extends EntityForm {
+
+  private function getServerIds() {
+
+    $serverIndexes = array();
+    $indexes = $this->entityTypeManager->getStorage('search_api_index')->loadMultiple();
+
+    foreach ($indexes as $index) {
+      $serverId = $index->getServerId();
+      $indexId = $index->id();
+      $serverIndex = $serverId . ':' . $indexId;
+      $serverIndexes[$serverId][$serverIndex] = $indexId;
+    }
+
+    return $serverIndexes;
+  }
+
   /**
    * {@inheritdoc}
    */
@@ -42,7 +58,16 @@ class ElasticsearchSearchBlockConfigForm extends EntityForm {
       '#disabled' => !$elasticsearch_search_block_conf->isNew(),
     );
 
-    /* You will need additional form elements for your custom properties. */
+    $indexes = $this->getServerIds();
+
+    $form['serverIndex'] = array(
+      '#title' => 'Server index',
+      '#type' => 'select',
+      '#options' => $indexes,
+      '#default_value' => $elasticsearch_search_block_conf->get('serverIndex'),
+    );
+
+    // @todo: adds the results display plugin select form input.
 
     return $form;
   }

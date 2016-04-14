@@ -30,7 +30,7 @@ class ElasticsearchFacetBlockConfigListBuilder extends ConfigEntityListBuilder {
   public function buildRow(EntityInterface $entity) {
     $row['label'] = $entity->label();
     $row['id'] = $entity->id();
-    $row['facet_key'] = $entity->get('facetKey');
+    $row['index_field'] = $entity->get('indexField');
     // You probably want a few more properties here...
     return $row + parent::buildRow($entity);
   }

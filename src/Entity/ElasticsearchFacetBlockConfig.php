@@ -64,13 +64,13 @@ class ElasticsearchFacetBlockConfig extends ConfigEntityBase implements Elastics
    *
    * @var string
    */
-  protected $facetKey;
+  protected $indexField;
 
   public function getFacetField() {
-    return preg_replace('/^.*\:(.*)$/', '$1', $this->facetKey);
+    return preg_replace('/^.*\:(.*)$/', '$1', $this->indexField);
   }
 
   public function getIndex() {
-    return preg_replace('/^(.*):.*$/', '$1', $this->facetKey);
+    return preg_replace('/^(.*):.*$/', '$1', $this->indexField);
   }
 }
